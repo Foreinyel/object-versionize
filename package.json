@@ -1,7 +1,7 @@
 {
   "name": "object-versionize",
   "version": "1.0.0",
-  "description": "",
+  "description": "Making a object versionized for easily checking if a object has been changed.",
   "module": "lib/index.es.js",
   "main": "lib/index.cjs.js",
   "scripts": {
@@ -9,8 +9,17 @@
     "build": "npx rimraf lib && npx mkdirp lib && tsc --emitDeclarationOnly && rollup -c && npx jest",
     "release": "standard-version"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "object version",
+    "object versionize"
+  ],
+  "repository": "Foreinyel/object-versionize",
+  "homepage": "https://github.com/Foreinyel/object-versionize",
+  "author": {
+    "name": "shihao",
+    "email": "shihao@hemyn.com",
+    "url": "https://github.com/Foreinyel"
+  },
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "7.13.8",
