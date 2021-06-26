@@ -4,16 +4,28 @@ type Version = {
   version: Symbol;
 };
 
-type ObjectVersion = {
+export type ObjectVersion<T> = {
+  [K in keyof T]: T[K];
+  // __version__: Symbol;
+  // __version___: Version;
+} & {
   __version__: Symbol;
   __version___: Version;
-  [k: string]: any;
 };
 
-function objectVersion(some: Object): object;
-function objectVersion(some: Object, version: Version): object;
-function objectVersion(some: Object, old?: ObjectVersion): object;
-function objectVersion(some: Object, version?: Version | ObjectVersion) {
+function objectVersion<T extends object>(some: T): ObjectVersion<T>;
+function objectVersion<T extends object>(
+  some: T,
+  version: Version
+): ObjectVersion<T>;
+function objectVersion<T extends object>(
+  some: T,
+  old?: ObjectVersion<T>
+): ObjectVersion<T>;
+function objectVersion<T extends object>(
+  some: T,
+  version?: Version | ObjectVersion<T>
+) {
   let _version: Version;
   if (!version) {
     _version = {
@@ -29,13 +41,13 @@ function objectVersion(some: Object, version?: Version | ObjectVersion) {
       _version = version as Version;
     } else if (deepCompare(some, version)) {
       _version = {
-        version: (version as ObjectVersion).__version___.version,
+        version: (version as ObjectVersion<T>).__version___.version,
       };
     }
   }
   const _some = new Proxy(some, {
-    set: (target: Object, key, value, receiver) => {
-      (target as ObjectVersion).__version___.version = Symbol("version");
+    set: (target: T, key, value, receiver) => {
+      (target as ObjectVersion<T>).__version___.version = Symbol("version");
       return Reflect.set(target, key, value, receiver);
     },
     get: (target, key, receiver) => {
@@ -47,7 +59,7 @@ function objectVersion(some: Object, version?: Version | ObjectVersion) {
         Object.prototype.toString.call(value) === "[object Object]" ||
         Object.prototype.toString.call(value) === "[object Array]"
       ) {
-        return objectVersion(value, (target as ObjectVersion).__version___);
+        return objectVersion(value, (target as ObjectVersion<T>).__version___);
       }
       return value;
     },
@@ -57,50 +69,8 @@ function objectVersion(some: Object, version?: Version | ObjectVersion) {
     configurable: true,
     enumerable: false,
   });
-  return _some as ObjectVersion;
+  return _some as ObjectVersion<T>;
 }
-
-// function objectVersion(
-//   some: Object,
-//   version: Version | undefined,
-//   old: Object | undefined
-// ) {}
-
-// const objectVersion: (some: Object, version?: Version) => ObjectVersion = (
-//   some,
-//   version?
-// ) => {
-//   if (!version) {
-//     version = {
-//       version: Symbol("version"),
-//     };
-//   }
-//   const _some = new Proxy(some, {
-//     set: (target: Object, key, value, receiver) => {
-//       (target as ObjectVersion).__version___.version = Symbol("version");
-//       return Reflect.set(target, key, value, receiver);
-//     },
-//     get: (target, key, receiver) => {
-//       if (key === "version") {
-//         return Reflect.get(target, "__version___").version;
-//       }
-//       const value = Reflect.get(target, key, receiver);
-//       if (
-//         Object.prototype.toString.call(value) === "[object Object]" ||
-//         Object.prototype.toString.call(value) === "[object Array]"
-//       ) {
-//         return objectVersion(value, (target as ObjectVersion).__version___);
-//       }
-//       return value;
-//     },
-//   });
-//   Reflect.defineProperty(_some, "__version___", {
-//     value: version,
-//     configurable: true,
-//     enumerable: false,
-//   });
-//   return _some as ObjectVersion;
-// };
 
 export default objectVersion;
 
